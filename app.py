@@ -13,19 +13,41 @@ from streamlit_drawable_canvas import st_canvas
 # ==================== CONFIGURACIÓN DE PÁGINA ====================
 st.set_page_config(page_title='Tablero Inteligente', layout='centered')
 
-# Fondo azul claro con efecto de nubes (sin imagen externa)
+# Fondo azul pastel con nubes difuminadas
 page_bg = """
 <style>
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(180deg, #cce5ff 0%, #b3daff 50%, #99ccff 100%);
+    background: linear-gradient(180deg, #cae9ff 0%, #bde0fe 50%, #a2d2ff 100%);
     background-attachment: fixed;
+    position: relative;
 }
-[data-testid="stHeader"] {
-    background: rgba(255, 255, 255, 0.0);
+
+/* Nubes suaves */
+[data-testid="stAppViewContainer"]::before {
+    content: "";
+    position: absolute;
+    top: -100px;
+    left: -100px;
+    width: 300%;
+    height: 300%;
+    background: radial-gradient(ellipse at 10% 20%, rgba(255,255,255,0.7) 0%, transparent 70%),
+                radial-gradient(ellipse at 70% 10%, rgba(255,255,255,0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at 90% 60%, rgba(255,255,255,0.7) 0%, transparent 70%),
+                radial-gradient(ellipse at 40% 80%, rgba(255,255,255,0.6) 0%, transparent 70%);
+    background-repeat: no-repeat;
+    z-index: 0;
 }
+
+/* Asegura que el contenido esté por encima del fondo */
+[data-testid="stAppViewContainer"] > div {
+    position: relative;
+    z-index: 1;
+}
+
+/* Estilos generales */
 h1, h2, h3, h4, h5, h6, p, label {
     font-family: 'Poppins', sans-serif;
-    color: #003566;
+    color: #002855;
 }
 .stButton>button {
     background-color: #f8f9fa;
@@ -39,6 +61,9 @@ h1, h2, h3, h4, h5, h6, p, label {
 .stButton>button:hover {
     background-color: #a2d2ff;
     color: #001d3d;
+}
+[data-testid="stHeader"] {
+    background: rgba(255, 255, 255, 0.0);
 }
 </style>
 """
@@ -79,25 +104,23 @@ client = OpenAI(api_key=api_key)
 analyze_button = st.button("✨ Analiza la imagen", type="secondary")
 
 # ==================== PROCESO DE ANÁLISIS ====================
+def encode_image_to_base64(image_path):
+    try:
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode("utf-8")
+    except FileNotFoundError:
+        return None
+
 if canvas_result.image_data is not None and api_key and analyze_button:
     with st.spinner("Analizando ..."):
         input_numpy_array = np.array(canvas_result.image_data)
         input_image = Image.fromarray(input_numpy_array.astype('uint8'),'RGBA')
         input_image.save('img.png')
 
-        def encode_image_to_base64(image_path):
-            try:
-                with open(image_path, "rb") as image_file:
-                    return base64.b64encode(image_file.read()).decode("utf-8")
-            except FileNotFoundError:
-                return None
-
         base64_image = encode_image_to_base64("img.png")
-        prompt_text = "Describe in spanish briefly the image"
+        prompt_text = "Describe en español brevemente lo que se observa en la imagen"
 
         try:
-            full_response = ""
-            message_placeholder = st.empty()
             response = openai.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -117,9 +140,9 @@ if canvas_result.image_data is not None and api_key and analyze_button:
                 max_tokens=500,
             )
 
-            if response.choices[0].message.content is not None:
-                full_response += response.choices[0].message.content
-                message_placeholder.markdown(full_response)
+            if response.choices[0].message.content:
+                st.markdown("### 🖼️ Resultado del análisis:")
+                st.markdown(response.choices[0].message.content)
 
         except Exception as e:
             st.error(f"Ocurrió un error: {e}")
