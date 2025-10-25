@@ -13,21 +13,32 @@ from streamlit_drawable_canvas import st_canvas
 # ==================== CONFIGURACIÓN DE PÁGINA ====================
 st.set_page_config(page_title='Tablero Inteligente', layout='centered')
 
-# Fondo azul claro con nubes mediante CSS
+# Fondo azul claro con efecto de nubes (sin imagen externa)
 page_bg = """
 <style>
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(to bottom, #bde0fe, #a2d2ff);
-    background-image: url("https://i.ibb.co/8s4S6HJ/clouds-bg.png");
-    background-size: cover;
-    background-position: center;
+    background: linear-gradient(180deg, #cce5ff 0%, #b3daff 50%, #99ccff 100%);
+    background-attachment: fixed;
 }
 [data-testid="stHeader"] {
     background: rgba(255, 255, 255, 0.0);
 }
-h1, h2, h3, h4, h5, h6, p {
+h1, h2, h3, h4, h5, h6, p, label {
     font-family: 'Poppins', sans-serif;
     color: #003566;
+}
+.stButton>button {
+    background-color: #f8f9fa;
+    color: #003566;
+    border-radius: 12px;
+    padding: 0.5em 1.5em;
+    border: 1px solid #89c2ff;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.stButton>button:hover {
+    background-color: #a2d2ff;
+    color: #001d3d;
 }
 </style>
 """
@@ -52,7 +63,7 @@ canvas_result = st_canvas(
     stroke_width=stroke_width,
     stroke_color=stroke_color,
     background_color=bg_color,
-    height=400,  # un poco más grande
+    height=400,
     width=500,
     drawing_mode=drawing_mode,
     key="canvas",
