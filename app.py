@@ -13,30 +13,65 @@ from streamlit_drawable_canvas import st_canvas
 # ==================== CONFIGURACIÓN DE PÁGINA ====================
 st.set_page_config(page_title='Tablero Inteligente', layout='centered')
 
-# Fondo azul pastel con nubes difuminadas
+import streamlit as st
+from PIL import Image, ImageOps, ImageFilter
+
+# ---------------- CONFIGURACIÓN DE LA PÁGINA ----------------
+st.set_page_config(page_title="Efecto de Espejo y Difuminado", layout="wide")
+
+# Fondo con degradado tipo atardecer
 page_bg = """
 <style>
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(180deg, #cae9ff 0%, #bde0fe 50%, #a2d2ff 100%);
+    background: linear-gradient(180deg, 
+        #FFD580 0%,      /* Amarillo suave */
+        #FFA64D 20%,     /* Naranja */
+        #FF6B6B 40%,     /* Rojo coral */
+        #E06AE0 60%,     /* Rosa/púrpura */
+        #4B0082 80%,     /* Índigo */
+        #0A043C 100%     /* Azul oscuro */
+    );
+    color: white;
     background-attachment: fixed;
-    position: relative;
 }
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Georgia", serif;
+    font-style: italic;
+    text-align: center;
+}
+</style>
+"""
+st.markdown(page_bg, unsafe_allow_html=True)
 
-/* Nubes suaves */
-[data-testid="stAppViewContainer"]::before {
-    content: "";
-    position: absolute;
-    top: -100px;
-    left: -100px;
-    width: 300%;
-    height: 300%;
-    background: radial-gradient(ellipse at 10% 20%, rgba(255,255,255,0.7) 0%, transparent 70%),
-                radial-gradient(ellipse at 70% 10%, rgba(255,255,255,0.6) 0%, transparent 60%),
-                radial-gradient(ellipse at 90% 60%, rgba(255,255,255,0.7) 0%, transparent 70%),
-                radial-gradient(ellipse at 40% 80%, rgba(255,255,255,0.6) 0%, transparent 70%);
-    background-repeat: no-repeat;
-    z-index: 0;
-}
+# ---------------- TÍTULO ----------------
+st.title("✨ Efecto de Espejo y Difuminado ✨")
+
+# ---------------- CARGAR IMAGEN ----------------
+imagen_subida = st.file_uploader("Sube una imagen para aplicar el efecto:", type=["jpg", "png", "jpeg"])
+
+if imagen_subida:
+    imagen = Image.open(imagen_subida)
+    st.image(imagen, caption="Imagen Original", use_column_width=True)
+
+    # Efectos
+    espejo = ImageOps.mirror(imagen)
+    difuminado = imagen.filter(ImageFilter.GaussianBlur(5))
+
+    # Mostrar resultados en columnas
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("🪞 Imagen Espejada")
+        st.image(espejo, use_column_width=True)
+    with col2:
+        st.subheader("🌫 Imagen Difuminada")
+        st.image(difuminado, use_column_width=True)
+
+    # Guardar imágenes
+    espejo.save("imagen_espejada.png")
+    difuminado.save("imagen_difuminada.png")
+
+    st.success("¡Efectos aplicados con éxito!")
+
 
 /* Asegura que el contenido esté por encima del fondo */
 [data-testid="stAppViewContainer"] > div {
